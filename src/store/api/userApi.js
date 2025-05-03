@@ -9,6 +9,9 @@ export const userApi = createApi({
           url: '/auth/signin',
           method: 'POST',
           body: credentials,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }),
     }),
     signupUser: builder.mutation({
@@ -16,6 +19,9 @@ export const userApi = createApi({
             url: '/auth/signup',
             method: 'POST',
             body: userData,
+            headers: {
+                'Content-Type': 'application/json',
+            },
         }),
     })
   }),
