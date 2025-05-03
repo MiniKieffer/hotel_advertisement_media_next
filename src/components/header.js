@@ -1,0 +1,70 @@
+"use client";
+
+import React from "react";
+import { useSelector } from "react-redux";
+import { user } from "../store/selectors/userSelector";
+import { styled, alpha } from '@mui/material/styles';
+import { useRouter } from "next/navigation";
+import Box from '@mui/material/Box';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import { clearUser } from '../store/slices/userSlice';
+import { useDispatch } from "react-redux";
+
+const StyledToolbar = styled(Toolbar)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexShrink: 0,
+  borderRadius: `calc(${theme.shape.borderRadius}px + 8px)`,
+  backdropFilter: 'blur(24px)',
+  border: '1px solid',
+  borderColor: (theme.vars || theme).palette.divider,
+  backgroundColor: theme.vars
+    ? `rgba(${theme.vars.palette.background.defaultChannel} / 0.4)`
+    : alpha(theme.palette.background.default, 0.4),
+  boxShadow: (theme.vars || theme).shadows[1],
+  padding: '8px 12px',
+}));
+
+export default function Header() {
+  const userData = useSelector(user);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const signOut = async () => {
+    await fetch("/api/auth/signout", { method: "POST" });
+    localStorage.removeItem("token");
+    dispatch(clearUser());
+    router.push('/');
+  };
+
+  return (
+    <header>
+      <AppBar
+        position="fixed"
+        enableColorOnDark
+        sx={{
+          boxShadow: 0,
+          bgcolor: "transparent",
+          backgroundImage: "none",
+          mt: "calc(var(--template-frame-height, 0px) + 28px)",
+        }}
+      >
+        <Container maxWidth="lg">
+          <StyledToolbar variant="dense" disableGutters>
+            <Box sx={{ flexGrow: 1 }} />
+            <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
+              {userData && (
+                <Button color="primary" variant="text" size="small" onClick={signOut}>
+                  Sign out
+                </Button>
+              )}
+            </Box>
+          </StyledToolbar>
+        </Container>
+      </AppBar>
+    </header>
+  );
+}
