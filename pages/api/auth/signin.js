@@ -1,6 +1,6 @@
-import connectDB from "@/utils/db";
-import User from "@/models/user";
-import { generateToken } from "@/utils/auth";
+import connectDB from "../../../utils/db";
+import User from "../../../models/user";
+import { generateToken } from "../../../utils/auth";
 
 export default async function handler(req, res) {
     
