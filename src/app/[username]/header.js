@@ -11,6 +11,7 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import { clearUser } from '../../store/slices/userSlice';
 import { useDispatch } from "react-redux";
+import Divider from '@mui/material/Divider';
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -62,10 +63,11 @@ export default function Header() {
           <StyledToolbar variant="dense" disableGutters>
             <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
               <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-                <Button variant="text" color="info" size="small" onClick={() => router.push(`/${user}`)}>
+                <Button variant="text" color="info" size="small" style={{color:'grey'}} onClick={() => router.push(`/${user}`)}>
                   Create_Ad
                 </Button>
-                <Button variant="text" color="info" size="small" onClick={() => router.push(`/${user}`)}>
+                <Divider orientation="vertical" variant="middle" flexItem />
+                <Button variant="text" color="info" size="small" style={{color:'grey'}} onClick={() => router.push(`/${user}/view_ads`)}>
                   View_Ad
                 </Button>
               </Box>
@@ -73,11 +75,13 @@ export default function Header() {
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
               {user && (
-                <Button color="primary" variant="text" size="small" onClick={signOut}>
+                <Button color="primary" variant="text" size="small" style={{color:"grey", backgroundColor:'lightblue'}} onClick={signOut}>
                   Sign out
                 </Button>
               )}
             </Box>
+            <Divider orientation="vertical" variant="middle" flexItem />
+            <Box style={{color:'grey'}}>Hello {user} !</Box>
           </StyledToolbar>
         </Container>
       </AppBar>

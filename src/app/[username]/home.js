@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from "next/navigation";
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
@@ -14,6 +14,8 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 
 
@@ -35,6 +37,8 @@ export default function Home({ username }) {
     const [video, setVideo] = useState([]);
     const [location, setLocation] = useState("");
     const router = useRouter();
+    const mapRef = useRef(null);
+    const markerRef = useRef(null);
     useEffect(() => {
         const storedUsername = localStorage.getItem("username");
         setLocalUsername(storedUsername);
@@ -44,27 +48,37 @@ export default function Home({ username }) {
         }
 
         if (document.getElementById('map')?._leaflet_id != null) return;
+        if (mapRef.current) return;
 
         const map = L.map('map').setView([36.1699, -115.1398], 12);
+        mapRef.current = map;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: false,
         }).addTo(map);
 
-        map.on('click', async (e) => {
-          if (e.originalEvent.ctrlKey) {
+        map.on('dblclick', async (e) => {
+          
             const { lat, lng } = e.latlng;
             const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
 
             try {
               const res = await fetch(url);
               const data = await res.json();
-              console.log(data);
+              if (data && data.address) {
+                  const { road, suburb, city, state, postcode, country } = data.address;
+                
+                  setLocation(`${road || ''} ${suburb || ''}, ${city || ''}, ${state || ''} ${postcode || ''}`);
+                
+                  console.log(location); // Example: "2000 Las Vegas Blvd S, Las Vegas, NV 89104"
+              } else {
+                  console.log('Address not found');
+              }
             } catch (err) {
               console.error('Geocoding error:', err);
             }
           }
-        });
+        );
     },[username, router]);
 
     const upload = async (e) => {
@@ -84,9 +98,53 @@ export default function Home({ username }) {
           if (res.ok) {
             setLocation("");
             setVideo(null);
+            alert('Successfully published!');
           }
         } catch (error) {
           console.log(error);
+        }
+    };
+
+    const handleSearch = async () => {
+        if (!location) return;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+    
+          if (data.length === 0) {
+            alert('Location not found');
+            return;
+          }
+    
+          const { lat, lon, display_name } = data[0];
+    
+          const map = mapRef.current;
+          map.setView([lat, lon], 14);
+
+          // Render MUI icon to static SVG markup
+          const iconMarkup = renderToStaticMarkup(
+            <LocationOnIcon style={{ color: 'red', fontSize: '32px' }} />
+          );
+          
+          // Create Leaflet DivIcon from SVG
+          const customIcon = L.divIcon({
+            html: iconMarkup,
+            className: '', // Remove Leaflet default styles
+            iconSize: [50, 50],
+            iconAnchor: [16, 32], // center bottom of icon
+          });
+          
+          // If marker exists, update it; otherwise create a new one
+          if (markerRef.current) {
+            markerRef.current.setLatLng([lat, lon]);
+          } else {
+            markerRef.current = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+          }
+    
+          markerRef.current.bindPopup(display_name).openPopup();
+        } catch (err) {
+          console.error('Forward geocoding error:', err);
         }
     };
 
@@ -127,10 +185,10 @@ export default function Home({ username }) {
                   <FormControl>
                     <FormLabel htmlFor="email">Location</FormLabel>
                     <TextField
-                      type="location"
+                      type="text"
                       id="location"
                       name="location"
-                      placeholder="location address"
+                      placeholder="Enter location"
                       autoComplete="location"
                       autoFocus
                       required
@@ -140,6 +198,9 @@ export default function Home({ username }) {
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                     />
+                    <Button onClick={handleSearch} style={{ padding: '6px 12px' }}>
+                      Search
+                    </Button>
                   </FormControl>
                   <FormControl>
                     <Button

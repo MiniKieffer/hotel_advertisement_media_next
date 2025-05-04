@@ -10,13 +10,11 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Divider from '@mui/material/Divider';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
-import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-
 import { setUser } from '../store/slices/userSlice';
 import { useDispatch } from "react-redux";
 
@@ -66,6 +64,7 @@ export default function Home() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [user, setUser] = useState("");
 
   const [emailError, setEmailError] = useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = useState('');
@@ -76,10 +75,14 @@ export default function Home() {
   const [signinUser, { isLoading, isError, error, isSuccess }] =
       useSigninUserMutation();
 
-  // const handleSignOut = async () => {
-  //   await fetch('/api/auth/logout', { method: 'POST' });
-  //   router.push('/'); // Redirect to home page after sign out
-  // };
+  useEffect(() => {
+    setUser(localStorage.getItem("username"));
+  },[])
+
+  useEffect(() => {
+    if(user) router.push(`/${user}`);
+  },[user])
+
   const handleSubmit = async (e) => {
     // if (emailError || passwordError) {
     //   event.preventDefault();
@@ -88,12 +91,10 @@ export default function Home() {
 
     e.preventDefault();
     const userToken = await signinUser({email, password}).unwrap();
-    const username = userToken.username;
     localStorage.setItem("token", userToken.token);
     localStorage.setItem("username", userToken.username);
-    dispatch(setUser(userToken));
-    router.push(`/${username}`);
-    
+    setUser(localStorage.getItem("username"));
+    router.push(`/${user}`);
   };
   // const validateInputs = () => {
   //   const email = document.getElementById('email');
@@ -129,7 +130,7 @@ export default function Home() {
           <Typography
             component="h1"
             variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
+            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign:'center' }}
           >
             Sign in
           </Typography>
@@ -196,13 +197,13 @@ export default function Home() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
-              <Link
+              <Button
                 variant="body2"
                 sx={{ alignSelf: 'center' }}
                 onClick={() => router.push('/signup')}
               >
                 Sign up
-              </Link>
+              </Button>
             </Typography>
           </Box>
         </Card>

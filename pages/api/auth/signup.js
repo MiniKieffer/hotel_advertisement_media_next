@@ -3,7 +3,6 @@ import User from "../../../models/user";
 import { generateToken } from "../../../utils/auth";
 
 export default async function handler(req, res) {
-  console.log('Inside API handler:', req.method);
   if (req.method === "POST") {
     const { name, email, password } = req.body;
     await connectDB();

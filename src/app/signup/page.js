@@ -17,6 +17,7 @@ import { styled } from '@mui/material/styles';
 import { useSignupUserMutation } from "../../store/api/userApi";
 import { setUser } from '../../store/slices/userSlice';
 import { useDispatch } from "react-redux";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -71,6 +72,7 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [user, setUser] = useState("");
 
   const [signupUser, { isLoading, isError, error, isSuccess }] =
         useSignupUserMutation();
@@ -78,12 +80,19 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
         e.preventDefault();
         const userToken = await signupUser({name, email, password}).unwrap();
-        const username = userToken.username;
         localStorage.setItem("token", userToken.token);
         localStorage.setItem("username", userToken.username);
-        dispatch(setUser(userToken));
-        router.push(`/${username}`);
+        setUser(localStorage.getItem("username"));
+        router.push(`/${user}`);
   };
+
+  useEffect(() => {
+    setUser(localStorage.getItem("username"));
+  },[])
+
+  useEffect(() => {
+    if(user) router.push(`/${user}`)
+  },[user])
 
   // const validateInputs = () => {
   //   const email = document.getElementById('email');
@@ -117,13 +126,18 @@ export default function SignUp() {
       <CssBaseline enableColorScheme />
       <SignInContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
-            Sign up
-          </Typography>
+          <div style={{alignItems:'center'}}>
+            <Button onClick={() => {router.push('/');}}>
+              <ArrowBackIcon style={{color:'grey'}}/>
+            </Button>
+            <Typography
+              component="h1"
+              variant="h4"
+              sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign:'center' }}
+            >
+              Sign up
+            </Typography>
+          </div>
           <Box
             component="form"
             onSubmit={handleSubmit}
