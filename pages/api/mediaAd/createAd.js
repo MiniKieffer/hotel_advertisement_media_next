@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import cloudinary from "../../../utils/cloudinary";
 import fs from "fs";
+const storage = multer.memoryStorage();
 
 // Disable default body parsing
 export const config = {
@@ -13,14 +14,14 @@ export const config = {
   },
 };
 
-// Setup storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${uuidv4()}${ext}`);
-  },
-});
+// // Setup storage
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => cb(null, "uploads/"),
+//   filename: (req, file, cb) => {
+//     const ext = path.extname(file.originalname);
+//     cb(null, `${uuidv4()}${ext}`);
+//   },
+// });
 
 const upload = multer({
   storage,
@@ -29,7 +30,7 @@ const upload = multer({
       ? cb(null, true)
       : cb(new Error("Only .mp4 videos are allowed!"));
   },
-}).array("videos", 5); // Accept multiple files
+}).array("videos", 10); // Accept multiple files
 
 function runMiddleware(req, res, fn) {
   return new Promise((resolve, reject) => {
@@ -38,7 +39,20 @@ function runMiddleware(req, res, fn) {
       else resolve(result);
     });
   });
-}
+};
+
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { resource_type: "video" },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    stream.end(fileBuffer);
+  });
+};
 
 export default async function handler(req, res) {
   if (req.method !== "POST")
@@ -54,12 +68,12 @@ export default async function handler(req, res) {
     const cloudinary_id_vid = [];
 
     for (const file of req.files) {
-      const result = await cloudinary.uploader.upload(file.path, {
-        resource_type: "video",
-      });
+      // const result = await cloudinary.uploader.upload(file.path, {
+      //   resource_type: "video",
+      // });
+      const result = await uploadToCloudinary(file.buffer);
       uploadedVideos.push(result.secure_url);
       cloudinary_id_vid.push(result.public_id);
-      fs.unlinkSync(file.path); // Optional: delete local file after upload
     }
 
     const ad = new Ad({ location, video: uploadedVideos, cloudinary_id_vid }); 
