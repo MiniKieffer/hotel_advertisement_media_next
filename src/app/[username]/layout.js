@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import Header from '../../components/header';
+import Header from './header';
 
 export default function RootLayout({ children }) {
 

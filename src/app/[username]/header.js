@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { useSelector } from "react-redux";
-import { user } from "../store/selectors/userSelector";
+import { useState, useEffect } from "react";
 import { styled, alpha } from '@mui/material/styles';
 import { useRouter } from "next/navigation";
 import Box from '@mui/material/Box';
@@ -10,7 +9,7 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import { clearUser } from '../store/slices/userSlice';
+import { clearUser } from '../../store/slices/userSlice';
 import { useDispatch } from "react-redux";
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
@@ -30,15 +29,22 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
 }));
 
 export default function Header() {
-  const userData = useSelector(user);
+  const [user, setUser] = useState()
   const dispatch = useDispatch();
   const router = useRouter();
   const signOut = async () => {
     await fetch("/api/auth/signout", { method: "POST" });
     localStorage.removeItem("token");
+    localStorage.removeItem("username");
     dispatch(clearUser());
     router.push('/');
   };
+
+  useEffect(() => {
+
+      setUser(localStorage.getItem("username"));
+
+  }, []);
 
   return (
     <header>
@@ -54,9 +60,19 @@ export default function Header() {
       >
         <Container maxWidth="lg">
           <StyledToolbar variant="dense" disableGutters>
+            <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
+              <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                <Button variant="text" color="info" size="small" onClick={() => router.push(`/${user}`)}>
+                  Create_Ad
+                </Button>
+                <Button variant="text" color="info" size="small" onClick={() => router.push(`/${user}`)}>
+                  View_Ad
+                </Button>
+              </Box>
+            </Box>
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
-              {userData && (
+              {user && (
                 <Button color="primary" variant="text" size="small" onClick={signOut}>
                   Sign out
                 </Button>

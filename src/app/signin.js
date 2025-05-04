@@ -1,21 +1,23 @@
 "use client";
-import React from 'react'
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSigninUserMutation } from "../store/api/userApi";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import CssBaseline from '@mui/material/CssBaseline';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Divider from '@mui/material/Divider';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
+import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-import { useSignupUserMutation } from "../../store/api/userApi";
-import { setUser } from '../../store/slices/userSlice';
+
+import { setUser } from '../store/slices/userSlice';
 import { useDispatch } from "react-redux";
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -60,31 +62,39 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-export default function SignUp() {
+export default function Home() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const [emailError, setEmailError] = useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
 
-  const router = useRouter();
   const dispatch = useDispatch();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [signinUser, { isLoading, isError, error, isSuccess }] =
+      useSigninUserMutation();
 
-  const [signupUser, { isLoading, isError, error, isSuccess }] =
-        useSignupUserMutation();
-
+  // const handleSignOut = async () => {
+  //   await fetch('/api/auth/logout', { method: 'POST' });
+  //   router.push('/'); // Redirect to home page after sign out
+  // };
   const handleSubmit = async (e) => {
-        e.preventDefault();
-        const userToken = await signupUser({name, email, password}).unwrap();
-        const username = userToken.username;
-        localStorage.setItem("token", userToken.token);
-        localStorage.setItem("username", userToken.username);
-        dispatch(setUser(userToken));
-        router.push(`/${username}`);
-  };
+    // if (emailError || passwordError) {
+    //   event.preventDefault();
+    //   return;
+    // }
 
+    e.preventDefault();
+    const userToken = await signinUser({email, password}).unwrap();
+    const username = userToken.username;
+    localStorage.setItem("token", userToken.token);
+    localStorage.setItem("username", userToken.username);
+    dispatch(setUser(userToken));
+    router.push(`/${username}`);
+    
+  };
   // const validateInputs = () => {
   //   const email = document.getElementById('email');
   //   const password = document.getElementById('password');
@@ -111,9 +121,8 @@ export default function SignUp() {
 
   //   return isValid;
   // };
-
   return (
-    <>
+    <div>
       <CssBaseline enableColorScheme />
       <SignInContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
@@ -122,12 +131,12 @@ export default function SignUp() {
             variant="h4"
             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
           >
-            Sign up
+            Sign in
           </Typography>
           <Box
             component="form"
-            onSubmit={handleSubmit}
             noValidate
+            onSubmit={handleSubmit}
             sx={{
               display: 'flex',
               flexDirection: 'column',
@@ -136,30 +145,12 @@ export default function SignUp() {
             }}
           >
             <FormControl>
-              <FormLabel htmlFor="email">Name</FormLabel>
-              <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
-                id="name"
-                type="name"
-                name="name"
-                placeholder="John"
-                autoComplete="name"
-                autoFocus
-                required
-                fullWidth
-                variant="outlined"
-                color={emailError ? 'error' : 'primary'}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </FormControl>
-            <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <TextField
                 error={emailError}
                 helperText={emailErrorMessage}
-                id="email"
                 type="email"
+                id="email"
                 name="email"
                 placeholder="your@email.com"
                 autoComplete="email"
@@ -176,10 +167,10 @@ export default function SignUp() {
               <TextField
                 error={passwordError}
                 helperText={passwordErrorMessage}
-                name="password"
                 placeholder="••••••"
                 type="password"
                 id="password"
+                name="password"
                 autoComplete="current-password"
                 autoFocus
                 required
@@ -198,11 +189,26 @@ export default function SignUp() {
               fullWidth
               variant="contained"
             >
-              Sign up
+              Sign in
             </Button>
+          </Box>
+          <Divider>or</Divider>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography sx={{ textAlign: 'center' }}>
+              Don&apos;t have an account?{' '}
+              <Link
+                variant="body2"
+                sx={{ alignSelf: 'center' }}
+                onClick={() => router.push('/signup')}
+              >
+                Sign up
+              </Link>
+            </Typography>
           </Box>
         </Card>
       </SignInContainer>
-    </>
+      {/* <button onClick={() => handleSubmit("signup")}>Sign Up</button>
+      <button onClick={() => handleSubmit("signin")}>Sign In</button> */}
+    </div>
   );
 }
