@@ -39,6 +39,7 @@ export default function Home({ username }) {
     const router = useRouter();
     const mapRef = useRef(null);
     const markerRef = useRef(null);
+
     useEffect(() => {
         const storedUsername = localStorage.getItem("username");
         setLocalUsername(storedUsername);
@@ -70,7 +71,6 @@ export default function Home({ username }) {
                 
                   setLocation(`${road || ''} ${suburb || ''}, ${city || ''}, ${state || ''} ${postcode || ''}`);
                 
-                  console.log(location); // Example: "2000 Las Vegas Blvd S, Las Vegas, NV 89104"
               } else {
                   console.log('Address not found');
               }
@@ -84,16 +84,42 @@ export default function Home({ username }) {
     const upload = async (e) => {
         try {
           e.preventDefault();
-          const data = new FormData();
-    
-          data.append("location", location);
+
+          const uploadedVideos = [];
+          const cloudinaryIds = [];
+
           for (var x = 0; x < video.length; x++) {
-            data.append("videos", video[x]);
+            // videoData.append("videos", video[x]);
+            const videoData = new FormData();
+            videoData.append("file", video[x]);
+            videoData.append("upload_preset", "unsigned_video_uploads");
+
+            const response = await fetch("https://api.cloudinary.com/v1_1/dczpo3bhz/video/upload", {
+              method: "POST",
+              body: videoData,
+            });
+          
+            const videoResdata = await response.json();
+            uploadedVideos.push(videoResdata.secure_url);
+            cloudinaryIds.push(videoResdata.public_id);
           }
 
-          const res = await fetch('/api/mediaAd/createAd', {
+          console.log(uploadedVideos);
+          console.log(cloudinaryIds);
+          // const data = new FormData();
+
+          // data.append("location", location);
+          // data.append("uploadedVideos", uploadedVideos);
+          // data.append("cloudinaryIds", cloudinaryIds);
+
+          const res = await fetch("/api/mediaAd/createAd", {
             method: "POST",
-            body: data,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: location,
+              video: uploadedVideos,
+              cloudinary_id_vid: cloudinaryIds,
+            }),
           });
           if (res.ok) {
             setLocation("");

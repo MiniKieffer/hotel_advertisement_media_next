@@ -1,18 +1,15 @@
 import connectDB from "../../../utils/db";
 import Ad from "../../../models/ad";
-const multer  = require('multer')
-import { v4 as uuidv4 } from "uuid";
-import path from "path";
-import cloudinary from "../../../utils/cloudinary";
-import fs from "fs";
-const storage = multer.memoryStorage();
+// const multer  = require('multer');
+// import cloudinary from "../../../utils/cloudinary";
+// const storage = multer.memoryStorage();
 
 // Disable default body parsing
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
 
 // // Setup storage
 // const storage = multer.diskStorage({
@@ -23,36 +20,36 @@ export const config = {
 //   },
 // });
 
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    file.mimetype === "video/mp4"
-      ? cb(null, true)
-      : cb(new Error("Only .mp4 videos are allowed!"));
-  },
-}).array("videos", 10); // Accept multiple files
+// const upload = multer({
+//   storage,
+//   fileFilter: (req, file, cb) => {
+//     file.mimetype === "video/mp4"
+//       ? cb(null, true)
+//       : cb(new Error("Only .mp4 videos are allowed!"));
+//   },
+// }).array("videos", 10); // Accept multiple files
 
-function runMiddleware(req, res, fn) {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result) => {
-      if (result instanceof Error) reject(result);
-      else resolve(result);
-    });
-  });
-};
+// function runMiddleware(req, res, fn) {
+//   return new Promise((resolve, reject) => {
+//     fn(req, res, (result) => {
+//       if (result instanceof Error) reject(result);
+//       else resolve(result);
+//     });
+//   });
+// };
 
-const uploadToCloudinary = (fileBuffer) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { resource_type: "video" },
-      (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
-      }
-    );
-    stream.end(fileBuffer);
-  });
-};
+// const uploadToCloudinary = (fileBuffer) => {
+//   return new Promise((resolve, reject) => {
+//     const stream = cloudinary.uploader.upload_stream(
+//       { resource_type: "video" },
+//       (error, result) => {
+//         if (error) reject(error);
+//         else resolve(result);
+//       }
+//     );
+//     stream.end(fileBuffer);
+//   });
+// };
 
 export default async function handler(req, res) {
   if (req.method !== "POST")
@@ -61,22 +58,24 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    await runMiddleware(req, res, upload);
-    const { location } = req.body;
-    console.log(req.files)
-    const uploadedVideos = [];
-    const cloudinary_id_vid = [];
+    // await runMiddleware(req, res, upload);
+    const { location, video, cloudinary_id_vid } = req.body;
 
-    for (const file of req.files) {
-      // const result = await cloudinary.uploader.upload(file.path, {
-      //   resource_type: "video",
-      // });
-      const result = await uploadToCloudinary(file.buffer);
-      uploadedVideos.push(result.secure_url);
-      cloudinary_id_vid.push(result.public_id);
-    }
+    console.log(location);
 
-    const ad = new Ad({ location, video: uploadedVideos, cloudinary_id_vid }); 
+    // const uploadedVideos = [];
+    // const cloudinary_id_vid = [];
+
+    // for (const file of req.files) {
+    //   // const result = await cloudinary.uploader.upload(file.path, {
+    //   //   resource_type: "video",
+    //   // });
+    //   const result = await uploadToCloudinary(file.buffer);
+    //   uploadedVideos.push(result.secure_url);
+    //   cloudinary_id_vid.push(result.public_id);
+    // }
+
+    const ad = new Ad({ location: location, video: video, cloudinary_id_vid: cloudinary_id_vid }); 
     await ad.save();
 
     return res.status(201).json(ad);
