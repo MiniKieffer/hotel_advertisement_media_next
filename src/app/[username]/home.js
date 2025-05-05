@@ -47,7 +47,6 @@ export default function Home({ username }) {
         if (storedUsername !== username) {
           router.push('/');
         }
-
         if (document.getElementById('map')?._leaflet_id != null) return;
         if (mapRef.current) return;
 
@@ -79,7 +78,7 @@ export default function Home({ username }) {
             }
           }
         );
-    },[username, router]);
+    },[username]);
 
     const upload = async (e) => {
         try {
@@ -104,8 +103,6 @@ export default function Home({ username }) {
             cloudinaryIds.push(videoResdata.public_id);
           }
 
-          console.log(uploadedVideos);
-          console.log(cloudinaryIds);
           // const data = new FormData();
 
           // data.append("location", location);
@@ -125,6 +122,7 @@ export default function Home({ username }) {
             setLocation("");
             setVideo(null);
             alert('Successfully published!');
+            router.push(`/${localUsername}/view_ads`)
           }
         } catch (error) {
           console.log(error);
@@ -175,7 +173,6 @@ export default function Home({ username }) {
     };
 
     return (
-      
       <Container
         maxWidth="lg"
         component="main"
@@ -187,13 +184,14 @@ export default function Home({ username }) {
                 }
             `}
         </style>
-        <Typography variant="h3" gutterBottom>
-          Create ADH
+        <Typography variant="h5" gutterBottom style={{textAlign:'center'}}>
+          Hello, {username}! Create your advertisement
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             
           <Grid container spacing={2} columns={12}>
             <Grid size={{ xs: 12, md: 6 }}>
+              <p style={{textAlign:'center', fontSize:'12px'}}>Double click on the map point so that you can get address</p>
               <div id="map" style={{ height: '500px', width: '100%' }} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>

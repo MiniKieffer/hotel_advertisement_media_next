@@ -16,6 +16,8 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import LaunchIcon from '@mui/icons-material/Launch';
+import { Button } from '@mui/material';
 
 export default function View_Ads() {
 
@@ -24,10 +26,9 @@ export default function View_Ads() {
     const mapRef = useRef(null);
     const markersRef = useRef([]);
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [username, setUsername] = useState("");
 
     useEffect(() => {
-        
-
         const fetchAds = async () => {
           const res = await fetch('/api/mediaAd/getAd');
           const data = await res.json();
@@ -35,7 +36,6 @@ export default function View_Ads() {
           else { return;}
         };
         fetchAds();
-        console.log(ads);
 
         if (document.getElementById('map')?._leaflet_id != null) return;
         if (mapRef.current) return;
@@ -49,17 +49,21 @@ export default function View_Ads() {
 
     },[]);
 
+    useEffect(() => {
+      setUsername(localStorage.getItem("username"));
+    },[])
+
     // Render markers when ads update
     useEffect(() => {
       if (!ads || !mapRef.current) return;
 
-      ads.forEach((ad) => {
+      ads.forEach((ad, index) => {
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ad.location)}`;
-        renderAdMarkers(url);
+        renderAdMarkers(url, index);
       });
     }, [ads]);
 
-    const renderAdMarkers = async (url) => {
+    const renderAdMarkers = async (url, index) => {
         try {
             const res = await fetch(url);
             const data = await res.json();
@@ -74,7 +78,9 @@ export default function View_Ads() {
       
             // Render MUI icon to static SVG markup
             const iconMarkup = renderToStaticMarkup(
-              <LocationOnIcon style={{ color: 'red', fontSize: '32px' }} />
+              <div className="custom-marker-icon">
+                <LocationOnIcon style={{ fontSize: '40px' }} />
+              </div>
             );
       
             const customIcon = L.divIcon({
@@ -86,6 +92,12 @@ export default function View_Ads() {
       
             const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
             marker.bindPopup(display_name);
+
+            marker.on('click', () => {
+              setSelectedIndex(index); // <- Expand corresponding accordion
+              goToMapLocation(display_name); // Optional: center map on click
+            });
+
             markersRef.current.push(marker);
       
             // Optional: Center to each marker (remove this if you want to center after all are placed)
@@ -113,47 +125,68 @@ export default function View_Ads() {
         maxWidth="lg"
         component="main"
         sx={{ display: 'flex', flexDirection: 'column', my: 16, gap: 4 }}
+        style={{marginTop:'80px'}}
       >
         <style>{`
                 .leaflet-control-attribution {
                   display: none !important;
                 }
+                .custom-marker-icon svg {
+                  color: forestgreen;
+                  transition: color 0.2s ease;
+                }
+
+                .custom-marker-icon:hover svg {
+                  color: lightslategray; 
+                }
             `}
         </style>
-        <Typography variant="h3" gutterBottom>
-          Published Ads
+        <Typography variant="h7" style={{textAlign:'center', borderBottom:'solid 1px block', backgroundColor:'lightyellow', padding:'10px', color:'grey'}}>
+          You can watch your ads details by clicking a map marker or select a pad on the right.
         </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }} style={{marginTop:'-20px'}} >
           <Grid container spacing={2} columns={12}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <div id="map" style={{ height: '500px', width: '100%' }} />
+            <Grid size={{ xs: 12, md: 8 }}>
+              <div id="map" style={{ height: '600px', width: '100%' }} />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-                <Box>
-                    {ads?.map((ad, index) => (
+            <Grid size={{ xs: 12, md: 4 }} style={{height:'600px'}}>
+                <Box
+                  sx={{
+                    maxHeight: '600px',   // or any value that fits your design
+                    overflowY: 'auto',    // enables vertical scroll
+                    pr: 1                 // optional: padding for scroll bar
+                  }}
+                >
+                    {ads?.slice().reverse().map((ad, index) => (
                         <div  key = {ad._id}>
-                            <Accordion key = {ad._id}>
+                            <Button style={{color:'forestgreen'}} onClick={() => {router.push(`/${username}/view_ads/${ad._id}`)}}>
+                                  <LaunchIcon />
+                            </Button>
+                            <Accordion key = {ad._id} style={{marginTop:'10px', marginBottom:'10px'}} expanded={selectedIndex === index} onChange={() => setSelectedIndex(index)}>
                               <AccordionSummary
                                 expandIcon={<ExpandMoreIcon />}
                                 aria-controls= {`panel1-content${index}`}
                                 id={`panel${index}-header`}
                                 onClick={(event) => {handleListItemClick(event, index); goToMapLocation(ad.location);}}
-                                style={{ backgroundColor: 'grey', color: 'white', marginBottom: '2px' }}
+                                style={{ color: 'black', marginBottom: '2px' }}
                               >
+                                
                                 <Typography component="span">{ad.location}</Typography>
                               </AccordionSummary>
                               <AccordionDetails>
-                                {ad.video.map((eachVideo, index) => (
+                                {/* {ad.video.map((eachVideo, index) => (
                                     <video width="100%" height="auto" style={{marginBottom:'3px'}} controls key={index}>
                                         <source src={eachVideo.replace('.wmv', '.mp4')} type="video/mp4" />
                                         Your browser does not support the video tag.
                                     </video>
-                                ))}
-                              
+                                ))} */}
+                                <video width="400px" height="auto" style={{marginBottom:'3px'}} controls >
+                                  <source src={ad.video[0]?.replace('.wmv', '.mp4')} type="video/mp4" />
+                                  Your browser does not support the video tag.
+                                </video>
                               </AccordionDetails>
-                              <Divider />
                             </Accordion>
+                            <Divider />
                         </div>
                     ))}
                 </Box>

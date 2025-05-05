@@ -12,6 +12,8 @@ import Container from '@mui/material/Container';
 import { clearUser } from '../../store/slices/userSlice';
 import { useDispatch } from "react-redux";
 import Divider from '@mui/material/Divider';
+import KeyboardControlKeyIcon from '@mui/icons-material/KeyboardControlKey';
+import Typography from '@mui/material/Typography';
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -42,9 +44,7 @@ export default function Header() {
   };
 
   useEffect(() => {
-
       setUser(localStorage.getItem("username"));
-
   }, []);
 
   return (
@@ -64,24 +64,21 @@ export default function Header() {
             <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
               <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
                 <Button variant="text" color="info" size="small" style={{color:'grey'}} onClick={() => router.push(`/${user}`)}>
-                  Create_Ad
+                  Create
                 </Button>
-                <Divider orientation="vertical" variant="middle" flexItem />
                 <Button variant="text" color="info" size="small" style={{color:'grey'}} onClick={() => router.push(`/${user}/view_ads`)}>
-                  View_Ad
+                  View
                 </Button>
               </Box>
             </Box>
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
               {user && (
-                <Button color="primary" variant="text" size="small" style={{color:"grey", backgroundColor:'lightblue'}} onClick={signOut}>
+                <Button color="primary" variant="text" size="small" style={{color:"grey"}} onClick={signOut}>
                   Sign out
                 </Button>
               )}
             </Box>
-            <Divider orientation="vertical" variant="middle" flexItem />
-            <Box style={{color:'grey'}}>Hello {user} !</Box>
           </StyledToolbar>
         </Container>
       </AppBar>
