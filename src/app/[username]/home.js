@@ -42,6 +42,7 @@ export default function Home({ username }) {
     const router = useRouter();
     const mapRef = useRef(null);
     const markerRef = useRef(null);
+    const MAX_SIZE_MB = 100;
 
     useEffect(() => {
         const storedUsername = localStorage.getItem("username");
@@ -89,6 +90,16 @@ export default function Home({ username }) {
         try {
           e.preventDefault();
           setLoading(true);
+
+          // Check file sizes
+          for (let file of video) {
+            const fileSizeMB = file.size / (1024 * 1024);
+            if (fileSizeMB > MAX_SIZE_MB) {
+              alert(`File "${file.name}" is too large. Maximum size is ${MAX_SIZE_MB}MB.`);
+              setLoading(false);
+              return;
+            }
+          }
           const uploadedVideos = [];
           const cloudinaryIds = [];
 
@@ -128,6 +139,9 @@ export default function Home({ username }) {
             setVideo(null);
             alert('Successfully published!');
             router.push(`/${localUsername}/view_ads`)
+          } else {
+            alert("Error, your publish failed due to some reason: large size, empty data or so on");
+            setLoading(false);
           }
         } catch (error) {
           console.log(error);
@@ -193,7 +207,6 @@ export default function Home({ username }) {
           Hello, {username}! Create your advertisement
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            
           <Grid container spacing={2} columns={12}>
             <Grid size={{ xs: 12, md: 6 }}>
               <p style={{textAlign:'center', fontSize:'12px'}}>Double click on the map point so that you can get address</p>
@@ -249,7 +262,9 @@ export default function Home({ username }) {
                     </Button>
                   </FormControl>
                   {loading ? (
-                    <CircularProgress />
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
+                      <CircularProgress />
+                    </Box>
                   ) : (
                     <Button
                     type="submit"

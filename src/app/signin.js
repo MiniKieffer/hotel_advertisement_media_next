@@ -15,7 +15,6 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-import { setUser } from '../store/slices/userSlice';
 import { useDispatch } from "react-redux";
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -64,7 +63,7 @@ export default function Home() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState("");
+  const [user, setUser] = useState(null);
 
   const [emailError, setEmailError] = useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = useState('');
@@ -94,7 +93,7 @@ export default function Home() {
     localStorage.setItem("token", userToken.token);
     localStorage.setItem("username", userToken.username);
     setUser(localStorage.getItem("username"));
-    router.push(`/${user}`);
+    // router.push(`/${user}`);
   };
   // const validateInputs = () => {
   //   const email = document.getElementById('email');

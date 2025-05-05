@@ -18,6 +18,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { Button } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Alert } from '@mui/material';
 
 export default function View_Ads() {
 
@@ -27,14 +29,18 @@ export default function View_Ads() {
     const markersRef = useRef([]);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [username, setUsername] = useState("");
+    const [adDeleteAlert, setAdDeleteAlert] = useState(false);
+    const [adId, setAdId] = useState(null);
+
+    const fetchAds = async () => {
+      const res = await fetch('/api/mediaAd/getAd');
+      const data = await res.json();
+      if(!ads || ads?.length !== 0) {setads(data);}
+      else { return;}
+    };
 
     useEffect(() => {
-        const fetchAds = async () => {
-          const res = await fetch('/api/mediaAd/getAd');
-          const data = await res.json();
-          if(!ads) {setads(data);}
-          else { return;}
-        };
+
         fetchAds();
 
         if (document.getElementById('map')?._leaflet_id != null) return;
@@ -119,6 +125,25 @@ export default function View_Ads() {
         map.setView([lat, lon], 14);
     }
 
+    const deleteAd = async () => {
+        try {
+          const res = await fetch("/api/mediaAd/deleteAd", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ad_id: adId,
+            }),
+          });
+          if (res.ok) {
+            fetchAds();
+          } else {
+            alert("Error");
+          }
+        } catch (error) {
+          console.log(error);
+        }
+    };
+
     return (
       
       <Container
@@ -127,6 +152,25 @@ export default function View_Ads() {
         sx={{ display: 'flex', flexDirection: 'column', my: 16, gap: 4 }}
         style={{marginTop:'80px'}}
       >
+        {adDeleteAlert && (
+          <Alert
+            severity="danger"
+            onClose={() => setAdDeleteAlert(false)} 
+            style={{backgroundColor:'lightcoral'}}
+            action={
+              <>
+                  <Button color="inherit" size="small" onClick={() => {setAdDeleteAlert(false); deleteAd();}}>
+                    OK
+                  </Button>
+                  <Button color="inherit" size="small" onClick={() => setAdDeleteAlert(false)}>
+                    CLOSE
+                  </Button>
+              </>
+            }
+          >
+           Do really want to delete this Ad?
+          </Alert>
+        )}
         <style>{`
                 .leaflet-control-attribution {
                   display: none !important;
@@ -161,6 +205,9 @@ export default function View_Ads() {
                         <div  key = {ad._id}>
                             <Button style={{color:'forestgreen'}} onClick={() => {router.push(`/${username}/view_ads/${ad._id}`)}}>
                                   <LaunchIcon />
+                            </Button>
+                            <Button style={{color:'grey'}} onClick={() => {setAdDeleteAlert(true); setAdId(ad._id)}}>
+                                  <DeleteIcon />
                             </Button>
                             <Accordion key = {ad._id} style={{marginTop:'10px', marginBottom:'10px'}} expanded={selectedIndex === index} onChange={() => setSelectedIndex(index)}>
                               <AccordionSummary

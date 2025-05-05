@@ -72,7 +72,7 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [user, setUser] = useState("");
+  const [user, setUser] = useState(null);
 
   const [signupUser, { isLoading, isError, error, isSuccess }] =
         useSignupUserMutation();
