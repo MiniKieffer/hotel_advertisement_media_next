@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { renderToStaticMarkup } from 'react-dom/server';
+import CircularProgress from '@mui/material/CircularProgress';
 
 
 
@@ -32,6 +33,8 @@ const VisuallyHiddenInput = styled('input')({
   });
 
 export default function Home({ username }) {
+
+    const [loading, setLoading] = useState(false);
 
     const [localUsername, setLocalUsername] = useState(null);
     const [video, setVideo] = useState([]);
@@ -75,6 +78,8 @@ export default function Home({ username }) {
               }
             } catch (err) {
               console.error('Geocoding error:', err);
+            } finally {
+              setLoading(false); // Stop spinner
             }
           }
         );
@@ -83,7 +88,7 @@ export default function Home({ username }) {
     const upload = async (e) => {
         try {
           e.preventDefault();
-
+          setLoading(true);
           const uploadedVideos = [];
           const cloudinaryIds = [];
 
@@ -243,13 +248,17 @@ export default function Home({ username }) {
                       />
                     </Button>
                   </FormControl>
-                  <Button
+                  {loading ? (
+                    <CircularProgress />
+                  ) : (
+                    <Button
                     type="submit"
                     fullWidth
                     variant="contained"
-                  >
-                    Publish
-                  </Button>
+                    >
+                      Publish
+                    </Button>
+                  )}
                 </Box>
             </Grid>
           </Grid>
