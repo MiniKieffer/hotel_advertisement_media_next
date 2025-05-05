@@ -55,7 +55,7 @@ export default function Ad_Detail({ad_id}) {
         sx={{ display: 'flex', flexDirection: 'column', my: 16, gap: 4 }}
         style={{marginTop:'90px'}}
       >
-        <Typography variant="h7" style={{ borderBottom:'solid 1px block', backgroundColor:'lightyellow', padding:'10px', color:'grey'}}>
+        <Typography variant="h7" style={{ borderBottom:'solid 1px block', backgroundColor:'white', padding:'10px', color:'black'}}>
           {ad?.location}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }} style={{marginTop:'-20px', border:'solid 1px black'}} >
@@ -67,7 +67,7 @@ export default function Ad_Detail({ad_id}) {
                </video>
                 ))} */}
           <Box>
-              <video width="100%" height="auto" style={{marginBottom:'3px'}} controls >
+              <video width="100%" height="auto" style={{marginBottom:'3px'}} controls key={activeStep}>
                 {ad?.video?.[activeStep] && (
                   <source src={ad.video[activeStep].replace('.wmv', '.mp4')} type="video/mp4" />
                 )}
@@ -75,33 +75,32 @@ export default function Ad_Detail({ad_id}) {
               </video>
           </Box>
           <MobileStepper
-          style={{marginTop:'-30px', color:'black'}}
-            variant="text"
+          style={{marginTop:'-30px', backgroundColor:'black', position:'static', top:'50vh', justifyContent:'center'}}
+            variant='none'
             steps={maxSteps}
-            position="static"
+            
             activeStep={activeStep}
             nextButton={
               <Button
                 size="medium"
                 onClick={handleNext}
                 disabled={activeStep === maxSteps - 1 || maxSteps == 0}
+                style={{backgroundColor:'grey', borderRadius:'50%', height:'58px', width:'50px', color:'white'}}
               >
-                Next
                 {theme.direction === 'rtl' ? (
-                  <KeyboardArrowLeft />
+                  <KeyboardArrowLeft fontSize='large' />
                 ) : (
-                  <KeyboardArrowRight />
+                  <KeyboardArrowRight fontSize='large' />
                 )}
               </Button>
             }
             backButton={
-              <Button size="medium" onClick={handleBack} disabled={activeStep === 0 || maxSteps == 0}>
+              <Button size="medium" onClick={handleBack} disabled={activeStep === 0 || maxSteps == 0} style={{color:'white',backgroundColor:'grey', borderRadius:'50%', height:'58px', width:'50px'}}>
                 {theme.direction === 'rtl' ? (
-                  <KeyboardArrowRight />
+                  <KeyboardArrowRight fontSize='large' />
                 ) : (
-                  <KeyboardArrowLeft />
+                  <KeyboardArrowLeft fontSize='large' />
                 )}
-                Back
               </Button>
             }
           />
